@@ -29,20 +29,21 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import coil3.compose.rememberAsyncImagePainter
+import com.example.sikhoapp.model.AnimDetailsResponse
 
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
-fun ShowAnimeDetail(id: Int?, mainActivityViewModel: MainActivityViewModel, onBack: () -> Unit) {
+fun ShowAnimeDetail(
+    response: AnimDetailsResponse?,
+    isFullScreen: Boolean,
+    updateFullScreen: (Boolean) -> Unit,
+    onBack: () -> Unit
+) {
     BackHandler {
         onBack()
     }
     val scrollState = rememberScrollState()
-    ShowLoader(loader = mainActivityViewModel.loader.value)
-    LaunchedEffect(key1 = "anim") {
-        mainActivityViewModel.callAnimeDetailApi(id)
-    }
 
-    val response = mainActivityViewModel.animeDetailResponse.value
     Card(
         elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
         colors = CardDefaults.cardColors(Color.White),
@@ -57,9 +58,11 @@ fun ShowAnimeDetail(id: Int?, mainActivityViewModel: MainActivityViewModel, onBa
             if (youtubeId != null) {
                 WebViewWithFullScreen(
                     response.data.trailer.embedUrl.orEmpty(),
-                    viewModel = mainActivityViewModel,
+                    isFullScreen = isFullScreen,
                     title = title.orEmpty()
-                )
+                ) {
+                    updateFullScreen(it)
+                }
             } else {
                 Image(
                     modifier = Modifier.fillMaxWidth(),
@@ -98,12 +101,12 @@ fun ShowAnimeDetail(id: Int?, mainActivityViewModel: MainActivityViewModel, onBa
 fun WebViewWithFullScreen(
     videoUrl: String,
     modifier: Modifier = Modifier,
-    viewModel: MainActivityViewModel,
-    title: String
+    isFullScreen: Boolean,
+    title: String,
+    updateFullScreen: (Boolean) -> Unit,
 ) {
     modifier.fillMaxSize()
     val context = LocalContext.current
-    val isFullScreen = viewModel.isFullScreen.value
     AndroidView(
         factory = { context ->
             WebView(context).apply {
@@ -138,7 +141,7 @@ fun WebViewWithFullScreen(
                             }
                             customView = null
                             customViewCallback?.onCustomViewHidden()
-                            viewModel.isFullScreen.value = false
+                            updateFullScreen(false)
                         } else {
                             (context as ComponentActivity).requestedOrientation =
                                 ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
@@ -152,7 +155,7 @@ fun WebViewWithFullScreen(
                                                 or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
                                         )
                             }
-                            viewModel.isFullScreen.value = true
+                            updateFullScreen(true)
                         }
 
 
@@ -170,7 +173,7 @@ fun WebViewWithFullScreen(
                             customView = null
                             customViewCallback?.onCustomViewHidden()
                         }
-                        viewModel.isFullScreen.value = false
+                        updateFullScreen(false)
                     }
                 }
 
@@ -187,7 +190,7 @@ fun WebViewWithFullScreen(
 
     // Handle back press to exit full-screen mode
     BackHandler(enabled = isFullScreen) {
-        viewModel.isFullScreen.value = false
+        updateFullScreen(false)
         (context as ComponentActivity).requestedOrientation =
             ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
     }

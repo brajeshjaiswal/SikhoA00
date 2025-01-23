@@ -14,6 +14,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -63,7 +64,16 @@ fun Navigation(modifier: Modifier) {
             })
         ) { navBackStackEntry ->
             val id = navBackStackEntry.arguments?.getInt("animeId")
-            ShowAnimeDetail(id, mainActivityViewModel) {
+            ShowLoader(loader = mainActivityViewModel.loader.value)
+            LaunchedEffect(key1 = "anim") {
+                mainActivityViewModel.callAnimeDetailApi(id)
+            }
+            ShowAnimeDetail(
+                mainActivityViewModel.animeDetailResponse.value,
+                mainActivityViewModel.isFullScreen.value,
+                updateFullScreen = { isFullScreen ->
+                    mainActivityViewModel.isFullScreen.value = isFullScreen
+                }) {
                 mainActivityViewModel.loader.value = false
                 mainActivityViewModel.animeDetailResponse.value = null
                 navController.popBackStack()
