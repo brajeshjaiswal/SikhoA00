@@ -18,7 +18,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -84,7 +83,7 @@ fun ShowAnime(
         LazyColumn {
             items(list.orEmpty()) { item ->
                 ShowAnimeList(item) {
-                    navController.navigate("show_anime_detail/${item.mal_id}")
+                    navController.navigate("show_anime_detail/${item.id}")
                 }
             }
         }

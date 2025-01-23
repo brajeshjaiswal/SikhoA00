@@ -2,10 +2,8 @@ package com.example.sikhoapp.presentation.ui
 
 import android.annotation.SuppressLint
 import android.content.pm.ActivityInfo
-import android.os.Build
 import android.view.View
 import android.webkit.WebChromeClient
-import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.ComponentActivity
@@ -14,7 +12,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -23,10 +20,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -40,16 +33,14 @@ import coil3.compose.rememberAsyncImagePainter
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun ShowAnimeDetail(id: Int?, mainActivityViewModel: MainActivityViewModel, onBack: () -> Unit) {
-     BackHandler {
-         onBack()
-     }
-    var isFullScreen by remember { mutableStateOf(false) }
+    BackHandler {
+        onBack()
+    }
     val scrollState = rememberScrollState()
     ShowLoader(loader = mainActivityViewModel.loader.value)
     LaunchedEffect(key1 = "anim") {
         mainActivityViewModel.callAnimeDetailApi(id)
     }
-   // val response = mainActivityViewModel.animeDetailResponse.value
 
     val response = mainActivityViewModel.animeDetailResponse.value
     Card(
@@ -61,83 +52,21 @@ fun ShowAnimeDetail(id: Int?, mainActivityViewModel: MainActivityViewModel, onBa
             .verticalScroll(scrollState)
     ) {
         Column {
-            val youtubeId = response?.data?.trailer?.youtube_id
+            val youtubeId = response?.data?.trailer?.youtubeId
             val title = response?.data?.title
             if (youtubeId != null) {
-                WebViewWithFullScreen(response?.data?.trailer?.embed_url.orEmpty(), viewModel = mainActivityViewModel)
-                /*AndroidView(
-                    factory = { context ->
-                        WebView(context).apply {
-                            settings.apply {
-                                javaScriptEnabled = true
-                                domStorageEnabled = true
-                                mediaPlaybackRequiresUserGesture = false
-                                useWideViewPort = true
-                                loadWithOverviewMode = true
-                                allowFileAccess = true
-                                cacheMode = WebSettings.LOAD_DEFAULT
-                                databaseEnabled = true
-                            }
-
-                            // To handle YouTube redirects and ensure proper playback
-                            webViewClient = WebViewClient()
-
-                            webChromeClient = object : WebChromeClient() {
-                                private var customView: View? = null
-
-                                override fun onShowCustomView(view: View, callback: CustomViewCallback?) {
-                                    customView = view
-                                    isFullScreen = true
-                                    // Replace the WebView's parent layout with the custom full-screen view
-                                    (parent as? View)?.visibility = View.GONE
-                                    (view.parent as? View)?.apply {
-                                        addView(view)
-                                        visibility = View.VISIBLE
-                                    }
-                                }
-
-                                override fun onHideCustomView() {
-                                    // Restore the original WebView layout
-                                    customView?.let {
-                                        (parent as? View)?.apply {
-                                            removeView(it)
-                                            visibility = View.VISIBLE
-                                        }
-                                        customView = null
-                                    }
-                                    isFullScreen = false
-                                }
-                            }
-                            loadData(
-                                "<iframe width=\"1100\" height=\"900\" src=\"https://www.youtube.com/embed/ZEkwCGJ3o7M?enablejsapi=1&wmode=opaque&autoplay=1\" title=\"$title\" frameborder=\"0\" allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" referrerpolicy=\"strict-origin-when-cross-origin\" allowfullscreen></iframe>",
-                                "text/html",
-                                "utf-8"
-                            )
-                            // loadUrl("https://www.youtube.com/embed/MewJ5bEM-5U")
-                        }
-                    },
-                    update = { webView ->
-                        webView.loadData(
-                            "<iframe width=\"1100\" height=\"900\" src=\"https://www.youtube.com/embed/ZEkwCGJ3o7M?enablejsapi=1&wmode=opaque&autoplay=1\" title=\"$title\" frameborder=\"0\" allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" referrerpolicy=\"strict-origin-when-cross-origin\" allowfullscreen></iframe>",
-                            "text/html",
-                            "utf-8"
-                        );
-                        // webView.loadUrl("https://www.youtube.com/embed/MewJ5bEM-5U")
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(300.dp)
+                WebViewWithFullScreen(
+                    response.data.trailer.embedUrl.orEmpty(),
+                    viewModel = mainActivityViewModel,
+                    title = title.orEmpty()
                 )
-                BackHandler(enabled = isFullScreen) {
-                    isFullScreen = false
-                }*/
             } else {
                 Image(
                     modifier = Modifier.fillMaxWidth(),
                     contentScale = ContentScale.Crop,
                     painter = rememberAsyncImagePainter(
-                        model = response?.data?.trailer?.images?.maximum_image_url
-                            ?: response?.data?.images?.webp?.large_image_url
+                        model = response?.data?.trailer?.images?.maximumImageUrl
+                            ?: response?.data?.images?.webp?.largeImageUrl
                     ),
                     contentDescription = ""
                 )
@@ -166,7 +95,12 @@ fun ShowAnimeDetail(id: Int?, mainActivityViewModel: MainActivityViewModel, onBa
 
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
-fun WebViewWithFullScreen(videoUrl: String, modifier: Modifier = Modifier, viewModel: MainActivityViewModel) {
+fun WebViewWithFullScreen(
+    videoUrl: String,
+    modifier: Modifier = Modifier,
+    viewModel: MainActivityViewModel,
+    title: String
+) {
     modifier.fillMaxSize()
     val context = LocalContext.current
     val isFullScreen = viewModel.isFullScreen.value
@@ -242,7 +176,7 @@ fun WebViewWithFullScreen(videoUrl: String, modifier: Modifier = Modifier, viewM
 
                 //loadUrl(videoUrl)
                 loadData(
-                    "<iframe width=\"1100\" height=\"500\" src=\"$videoUrl\" title=\"$title\" frameborder=\"0\" allow=\"accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" referrerpolicy=\"strict-origin-when-cross-origin\" allowfullscreen></iframe>",
+                    "<iframe width=\"1100\" height=\"600\" src=\"$videoUrl\" title=\"$title\" frameborder=\"0\" allow=\"accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" referrerpolicy=\"strict-origin-when-cross-origin\" allowfullscreen></iframe>",
                     "text/html",
                     "utf-8"
                 )

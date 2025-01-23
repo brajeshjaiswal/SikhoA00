@@ -33,11 +33,11 @@ fun ShowAnimeList(response: AnimeListResponse.AnimeData?, onItemClick: () -> Uni
             Image(
                 modifier = Modifier.width(140.dp),
                 contentScale = ContentScale.Crop,
-                painter = rememberAsyncImagePainter(model = response?.images?.webp?.image_url),
+                painter = rememberAsyncImagePainter(model = response?.images?.webp?.imageUrl),
                 contentDescription = ""
             )
             Column(modifier = Modifier.padding(5.dp)) {
-                AnimInfo(label = "Title: ", response?.title_english ?: response?.title.orEmpty())
+                AnimInfo(label = "Title: ", response?.titleEnglish ?: response?.title.orEmpty())
                 AnimInfo(label = "Episodes: ", response?.episodes.orEmpty())
                 AnimInfo(label = "Rating: ", response?.rating.orEmpty())
             }
